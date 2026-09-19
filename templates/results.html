@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html>
+<head><title>Ranking Results</title></head>
+<body style="font-family: Arial; max-width: 800px; margin: 40px auto;">
+    <h2>Ranked Candidates</h2>
+    <table border="1" cellpadding="8" style="border-collapse: collapse; width:100%;">
+        <tr style="background:#182644; color:white;">
+            <th>Rank</th><th>Resume</th><th>Score</th><th>Matched Skills</th><th>Skill Gaps (max 2)</th>
+        </tr>
+        {% for c in candidates %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.score }}%</td>
+            <td>{{ c.matched_skills | join(", ") }}</td>
+            <td>{{ c.skill_gaps | join(", ") }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br><a href="/">&larr; Screen more candidates</a>
+</body>
+</html>

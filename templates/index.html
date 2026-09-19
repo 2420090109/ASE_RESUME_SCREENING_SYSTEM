@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Resume Screening & Candidate Ranking</title>
+</head>
+<body>
+    <h2>AI Resume Screening & Candidate Ranking</h2>
+
+    <form id="rankForm" action="/rank" method="POST" enctype="multipart/form-data">
+        <label for="jd">Job Description</label><br>
+        <textarea id="jd" name="job_description" rows="6" cols="60" required></textarea><br><br>
+
+        <label>Upload Resumes (PDF/DOCX):</label><br>
+        <!-- Picker input (not submitted directly) -->
+        <input type="file" id="filePicker" accept=".pdf,.docx" multiple><br>
+
+        <!-- Staged files list -->
+        <ul id="fileList"></ul>
+
+        <button type="submit">Rank Candidates</button>
+    </form>
+
+    <script>
+        const filePicker = document.getElementById('filePicker');
+        const fileList = document.getElementById('fileList');
+        const rankForm = document.getElementById('rankForm');
+        
+        // DataTransfer accumulates files across multiple "Choose Files" dialog opens
+        const fileQueue = new DataTransfer();
+
+        filePicker.addEventListener('change', () => {
+            for (let file of filePicker.files) {
+                // Prevent duplicate files with the same name
+                const exists = Array.from(fileQueue.files).some(f => f.name === file.name);
+                if (!exists) {
+                    fileQueue.items.add(file);
+                }
+            }
+            renderList();
+            filePicker.value = ""; // Reset picker so the same file or new files can be re-triggered
+        });
+
+        function renderList() {
+            fileList.innerHTML = '';
+            Array.from(fileQueue.files).forEach((file, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB) `;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = "button";
+                removeBtn.textContent = "Remove";
+                removeBtn.onclick = () => {
+                    fileQueue.items.remove(index);
+                    renderList();
+                };
+                
+                li.appendChild(removeBtn);
+                fileList.appendChild(li);
+            });
+        }
+
+        rankForm.addEventListener('submit', (e) => {
+            if (fileQueue.files.length === 0) {
+                e.preventDefault();
+                alert("Please select at least one resume.");
+                return;
+            }
+
+            // Create a hidden input carrying the combined file list into request.files.getlist('resumes')
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'file';
+            hiddenInput.name = 'resumes';
+            hiddenInput.multiple = true;
+            hiddenInput.style.display = 'none';
+            hiddenInput.files = fileQueue.files;
+
+            rankForm.appendChild(hiddenInput);
+        });
+    </script>
+</body>
+</html>
